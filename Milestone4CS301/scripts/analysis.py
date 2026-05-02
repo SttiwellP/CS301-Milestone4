@@ -16,7 +16,8 @@ from sklearn.metrics import r2_score
 sns.set_style("whitegrid")
 plt.rcParams["figure.figsize"] = (10, 6)
 
-os.makedirs("output", exist_ok=True)
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 print("Starting project analysis...\n")
 
@@ -58,7 +59,7 @@ air_quality[numerical_cols].hist(
 )
 
 plt.tight_layout()
-plt.savefig("output/air_quality_feature_distributions.png")
+plt.savefig(os.path.join(OUTPUT_DIR, "air_quality_feature_distributions.png"))
 plt.clf()
 
 plt.figure(figsize=(12, 8))
@@ -70,7 +71,7 @@ sns.heatmap(
 )
 
 plt.title("Correlation Matrix - Air Quality Dataset")
-plt.savefig("output/air_quality_correlation_matrix.png")
+plt.savefig(os.path.join(OUTPUT_DIR, "air_quality_correlation_matrix.png"))
 plt.clf()
 
 sns.scatterplot(
@@ -80,11 +81,10 @@ sns.scatterplot(
 )
 
 plt.title("Severity Score vs Health Risk Score")
-plt.savefig("output/severity_vs_health_risk.png")
+plt.savefig(os.path.join(OUTPUT_DIR, "severity_vs_health_risk.png"))
 plt.clf()
 
 print("Running Disaster Dataset EDA...\n")
-
 
 disaster["declaration_date"] = pd.to_datetime(
     disaster["declaration_date"]
@@ -102,7 +102,7 @@ sns.histplot(
 plt.title("Distribution of Natural Disasters by Year")
 plt.xlabel("Year")
 plt.ylabel("Frequency")
-plt.savefig("output/disaster_distribution_by_year.png")
+plt.savefig(os.path.join(OUTPUT_DIR, "disaster_distribution_by_year.png"))
 plt.clf()
 
 top_types = disaster["incident_type"].value_counts().head(10).index
@@ -119,7 +119,7 @@ sns.boxplot(
 
 plt.xticks(rotation=45)
 plt.title("Incident Type vs Declaration Year")
-plt.savefig("output/incident_type_vs_year.png")
+plt.savefig(os.path.join(OUTPUT_DIR, "incident_type_vs_year.png"))
 plt.clf()
 
 print("Running Hypothesis Testing...\n")
@@ -127,7 +127,6 @@ print("Running Hypothesis Testing...\n")
 air_quality["month"] = (
     np.arange(len(air_quality)) % 12
 ) + 1
-
 
 monthly_avg_severity = (
     air_quality
@@ -137,9 +136,7 @@ monthly_avg_severity = (
 )
 
 monthly_avg_severity.rename(
-    columns={
-        "Severity_Score": "avg_severity_score"
-    },
+    columns={"Severity_Score": "avg_severity_score"},
     inplace=True
 )
 
@@ -150,7 +147,6 @@ monthly_disaster_counts = (
     .reset_index(name="num_disasters")
 )
 
-
 merged_monthly_data = pd.merge(
     monthly_avg_severity,
     monthly_disaster_counts,
@@ -159,6 +155,11 @@ merged_monthly_data = pd.merge(
 )
 
 merged_monthly_data.fillna(0, inplace=True)
+
+merged_monthly_data.to_csv(
+    os.path.join(OUTPUT_DIR, "merged_monthly_data.csv"),
+    index=False
+)
 
 print("Merged Monthly Data:")
 print(merged_monthly_data)
@@ -169,13 +170,10 @@ correlation_coefficient, p_value = stats.pearsonr(
 )
 
 print(
-    f"\nPearson Correlation Coefficient: "
-    f"{correlation_coefficient:.4f}"
+    f"\nPearson Correlation Coefficient: {correlation_coefficient:.4f}"
 )
 
-print(
-    f"P-value: {p_value:.4f}"
-)
+print(f"P-value: {p_value:.4f}")
 
 alpha = 0.05
 
@@ -213,7 +211,6 @@ predictions = model.predict(X_test)
 r2 = r2_score(y_test, predictions)
 
 print(f"R-squared Score: {r2:.4f}")
-
 
 print("\nProject completed successfully.")
 print("All visualizations saved in the output folder.")
